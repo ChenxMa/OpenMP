@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <time.h>
+#include <omp.h>
 
 using namespace std;
 
@@ -12,13 +13,14 @@ struct Body {
     double r[2];
     double v[2];
 };
+double deta_t = 0.001, G = 6.673 * pow(10, -11);
 
-int main() {
+int cal(int a)
+{
     clock_t start, end;
-    start = clock();
 
-    int n = 5000; // number of bodies
-    double deta_t = 0.001, G = 6.673 * pow(10, -11);
+    int n = a;
+    int threads;
     double r_ij[2], f_ij[2], F_i[2], a_i[2];
 
     srand(time(NULL)); // initialize random seed
@@ -33,17 +35,18 @@ int main() {
         bodies[i].v[1] = 0.0;
     }
 
-    //Print out the properties of each body
-    for (int i = 0; i < n; i++) {
-        cout << "Body " << i << ":" << endl;
-        cout << "  mass = " << bodies[i].mass << endl;
-        cout << "  position = (" << bodies[i].r[0] << ", " << bodies[i].r[1] << ")" << endl;
-        cout << "  velocity = (" << bodies[i].v[0] << ", " << bodies[i].v[1] << ")" << endl;
-    }
-
-    // Update the properties  
+    // Print out the properties of each body
+    //for (int i = 0; i < n; i++) {
+    //    cout << "Body " << i << ":" << endl;
+    //    cout << "  mass = " << bodies[i].mass << endl;
+    //    cout << "  position = (" << bodies[i].r[0] << ", " << bodies[i].r[1] << ")" << endl;
+    //    cout << "  velocity = (" << bodies[i].v[0] << ", " << bodies[i].v[1] << ")" << endl;
+    //}
+    start = clock();
+    // Update the properties 
     for (int k = 0; k < 4; k++)
     {
+        threads = omp_get_num_threads();
         for (int i = 0; i < n; i++)
         {
             F_i[0] = 0.0;
@@ -70,16 +73,42 @@ int main() {
 
         }
     }
+    end = clock();
 
     // Print out the properties of each body
-    for (int i = 0; i < n; i++) {
-        cout << "Body " << i << ":" << endl;
-        cout << "  mass = " << bodies[i].mass << endl;
-        cout << "  position = (" << bodies[i].r[0] << ", " << bodies[i].r[1] << ")" << endl;
-        cout << "  velocity = (" << bodies[i].v[0] << ", " << bodies[i].v[1] << ")" << endl;
-    }
+    //for (int i = 0; i < n; i++) {
+    //    cout << "Body " << i << ":" << endl;
+    //    cout << "  mass = " << bodies[i].mass << endl;
+    //    cout << "  position = (" << bodies[i].r[0] << ", " << bodies[i].r[1] << ")" << endl;
+    //    cout << "  velocity = (" << bodies[i].v[0] << ", " << bodies[i].v[1] << ")" << endl;
+    //}
+    double IPS = (4 * n * n) / (2 * (double(end - start) / CLOCKS_PER_SEC));
+    cout << "Threads : " << threads << ",Bodies:" << n << ",Performance:" << IPS << endl;
+    return 0;
+}
 
-    end = clock();
-    cout << "The time cost = " << double(end - start) / CLOCKS_PER_SEC << "s" << endl;
+int main() {
+
+
+    int a[] = { 200,500,1000,2000,5000,10000 }; // number of bodies
+
+    for (int m = 0; m < sizeof(a) / sizeof(a[0]); m++)
+    {
+        int n = a[m];
+
+        if (n < 5000)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                cal(a[m]);
+            }
+
+        }
+        else
+        {
+            cal(a[m]);
+        }
+
+    }
     return 0;
 }
