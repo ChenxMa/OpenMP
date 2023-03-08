@@ -5,6 +5,7 @@
 #include <ctime>
 #include <time.h>
 #include <omp.h>
+#include <fstream>
 
 using namespace std;
 
@@ -44,10 +45,10 @@ int cal(int a)
     //}
     start = clock();
     // Update the properties 
-    for (int k = 0; k < 4; k++)
+    for (int k = 0; k < 4; k++) //Numbers of iteration
     {
         threads = omp_get_num_threads();
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)//Calculate F_i
         {
             F_i[0] = 0.0;
             F_i[1] = 0.0;
@@ -68,7 +69,7 @@ int cal(int a)
             a_i[1] = F_i[1] / bodies[i].mass;
             bodies[i].v[0] += deta_t * a_i[0];
             bodies[i].v[1] += deta_t * a_i[1];
-            bodies[i].r[0] += deta_t * bodies[i].v[0];
+            bodies[i].r[0] += deta_t * bodies[i].v[0];//Update movement
             bodies[i].r[1] += deta_t * bodies[i].v[1];
 
         }
@@ -82,15 +83,19 @@ int cal(int a)
     //    cout << "  position = (" << bodies[i].r[0] << ", " << bodies[i].r[1] << ")" << endl;
     //    cout << "  velocity = (" << bodies[i].v[0] << ", " << bodies[i].v[1] << ")" << endl;
     //}
-    double IPS = (4 * n * n) / (2 * (double(end - start) / CLOCKS_PER_SEC));
+    double IPS = (4 * n * n) / (double(end - start) / CLOCKS_PER_SEC);//Calculate performance
+    //ofstream outfile;
+    //outfile.open("demo_seq.txt", ios::out | ios::app);
     cout << "Threads : " << threads << ",Bodies:" << n << ",Performance:" << IPS << endl;
+    //cout << (double(end - start) / CLOCKS_PER_SEC) << endl;
+    //outfile.close();
     return 0;
 }
 
 int main() {
 
 
-    int a[] = { 200,500,1000,2000,5000,10000 }; // number of bodies
+    int a[] = { 200, 500, 1000, 2000, 5000, 10000 }; // number of bodies
 
     for (int m = 0; m < sizeof(a) / sizeof(a[0]); m++)
     {
